@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import {
   getCurrentPageUid,
   getPagesBaseonString,
@@ -48,14 +48,16 @@ function Hierarchy() {
       return <HierarchyLink info={info} />;
     })
   ) : titleRef.current ? (
-    <SpansLink spans={titleRef.current.split("/")} />
+    <NoChildLink>
+      <SpansLink spans={titleRef.current.split("/")} />
+    </NoChildLink>
   ) : null;
   if (!content) {
     return null;
   }
   return (
     <div className="rm-hierarchy">
-      <div>{caretTitleVm.Comp}</div>
+      <div style={{ marginBottom: 5 }}>{caretTitleVm.Comp}</div>
       {!caretTitleVm.open ? null : (
         <div className="rm-mentions refs-by-page-view">{content}</div>
       )}
@@ -137,18 +139,41 @@ function SpansLink(props: { spans: string[] }) {
   );
 }
 
+const NoChildLink = (props: { children: any }) => {
+  return (
+    <div
+      className="flex-h-box"
+      style={{ justifyItems: "center", alignItems: 'center'}}
+    >
+      <Icon className="icon-caret" style={{ margin: '0 6px 0 6px'}} icon="circle" size={6}></Icon>
+      <strong
+        style={{
+          color: "rgb(206, 217, 224)",
+        }}
+      >
+        {props.children}
+      </strong>
+    </div>
+  );
+};
+
 function HierarchyLink(props: { info: { title: string; uid: string } }) {
   const { title } = props.info;
   const spans = title.split("/");
   // 找到所有层级比当前页面层级低的 references
   const caretTitleVm = useCaretTitle(<SpansLink spans={spans} />, false);
-
+  const referencingBlocks = useMemo(
+    () => getBlockUidsReferencingPage(title),
+    [title]
+  );
   return (
     <div>
-      {caretTitleVm.Comp}
+          {referencingBlocks.length ? caretTitleVm.Comp : <NoChildLink>
+            <SpansLink spans={spans} />
+          </NoChildLink>}
       {caretTitleVm.open ? (
         <div className="rm-mentions refs-by-page-view">
-          <HierarchyMentions title={title} />
+          <HierarchyMentions blocks={referencingBlocks} />
         </div>
       ) : null}
     </div>
@@ -177,12 +202,11 @@ function groupBySamePage(uids: string[]) {
   return Object.values(group);
 }
 
-function HierarchyMentions(props: { title: string }) {
-  const referencingBlocks = getBlockUidsReferencingPage(props.title);
+function HierarchyMentions(props: { blocks: string[] }) {
   const [isOpen, setOpen] = useState(true);
   return (
     <>
-      {groupBySamePage(referencingBlocks).map((info) => {
+      {groupBySamePage(props.blocks).map((info) => {
         return (
           <div className="page-group rm-ref-page-view">
             <div className="rm-ref-page-view-title">
@@ -258,6 +282,9 @@ function addStyle() {
   const style = document.createElement("style");
   document.head.appendChild(style);
   style.innerHTML = `
+  .rm-hierarchy {
+    margin-bottom: 10px;
+  }
   .rm-hierarchy .caret-title .rm-caret {
     opacity: 0;
   }
