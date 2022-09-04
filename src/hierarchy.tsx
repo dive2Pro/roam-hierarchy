@@ -106,6 +106,8 @@ function PageLink(props: { title: string; name: string; className?: string }) {
     <>
       <a
         onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
           if (e.shiftKey) {
             openPageByTitleOnSideBar(props.title);
             return;
