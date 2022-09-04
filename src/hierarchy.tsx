@@ -309,7 +309,7 @@ function addStyle() {
     opacity: 1;
   }
   .rm-hierarchy .page-group .icon-caret-open{
-        opacity: 1;
+    opacity: 1;
    }
   .rm-hierarchy:hover .page-group .icon-caret,.icon-caret-open{
     opacity: 1;
