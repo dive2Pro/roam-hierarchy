@@ -2,7 +2,7 @@
 
 Namespace pages now display with hierarchy
 
-![](Hierarchy%20demo.gif)
+![](https://github.com/dive2Pro/roam-hierarchy/blob/main/Hierarchy%20demo.gif)
 
 
 ## FAQ
