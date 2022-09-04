@@ -143,9 +143,14 @@ const NoChildLink = (props: { children: any }) => {
   return (
     <div
       className="flex-h-box"
-      style={{ justifyItems: "center", alignItems: 'center'}}
+      style={{ justifyItems: "center", alignItems: "center" }}
     >
-      <Icon className="icon-caret" style={{ margin: '0 6px 0 6px'}} icon="circle" size={6}></Icon>
+      <Icon
+        className="icon-caret"
+        style={{ margin: "0 6px 0 6px" }}
+        icon="circle"
+        size={6}
+      ></Icon>
       <strong
         style={{
           color: "rgb(206, 217, 224)",
@@ -168,9 +173,13 @@ function HierarchyLink(props: { info: { title: string; uid: string } }) {
   );
   return (
     <div>
-          {referencingBlocks.length ? caretTitleVm.Comp : <NoChildLink>
-            <SpansLink spans={spans} />
-          </NoChildLink>}
+      {referencingBlocks.length ? (
+        caretTitleVm.Comp
+      ) : (
+        <NoChildLink>
+          <SpansLink spans={spans} />
+        </NoChildLink>
+      )}
       {caretTitleVm.open ? (
         <div className="rm-mentions refs-by-page-view">
           <HierarchyMentions blocks={referencingBlocks} />
@@ -202,39 +211,42 @@ function groupBySamePage(uids: string[]) {
   return Object.values(group);
 }
 
-function HierarchyMentions(props: { blocks: string[] }) {
+function Mention({ info }: { info: { title: string; uids: string[] } }) {
   const [isOpen, setOpen] = useState(true);
   return (
-    <>
-      {groupBySamePage(props.blocks).map((info) => {
-        return (
-          <div className="page-group rm-ref-page-view">
-            <div className="rm-ref-page-view-title">
-              <Icon
-                icon={`caret-${isOpen ? "down" : "right"}`}
-                className={`icon-caret icon-caret${isOpen ? "-open" : ""}`}
-                onClick={() => setOpen(!isOpen)}
-              ></Icon>
-              <PageLink
-                title={info.title}
-                name={info.title}
-                className="rm-page__title"
-              />
-            </div>
-            {isOpen ? (
-              <div className="" style={{ marginLeft: 4 }}>
-                {info.uids.map((uid) => {
-                  return (
-                    <div style={{ marginBottom: 5 }}>
-                      <ReferencingBlock uid={uid} key={uid} />
-                    </div>
-                  );
-                })}
+    <div className="page-group rm-ref-page-view">
+      <div className="rm-ref-page-view-title">
+        <Icon
+          icon={`caret-${isOpen ? "down" : "right"}`}
+          className={`icon-caret icon-caret${isOpen ? "-open" : ""}`}
+          onClick={() => setOpen(!isOpen)}
+        ></Icon>
+        <PageLink
+          title={info.title}
+          name={info.title}
+          className="rm-page__title"
+        />
+      </div>
+      {isOpen ? (
+        <div className="" style={{ marginLeft: 4 }}>
+          {info.uids.map((uid) => {
+            return (
+              <div style={{ marginBottom: 5 }}>
+                <ReferencingBlock uid={uid} key={uid} />
               </div>
-            ) : null}
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+function HierarchyMentions(props: { blocks: string[] }) {
+  return (
+    <>
+      {groupBySamePage(props.blocks).map((info) => (
+        <Mention info={info} key={info.title} />
+      ))}
     </>
   );
 }
