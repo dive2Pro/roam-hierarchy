@@ -4,8 +4,14 @@ export const generateId = () => {
   return window.roamAlphaAPI.util.generateUID();
 };
 
+const createPageByTitle = async (title: string) => {
+  try {
+    await window.roamAlphaAPI.createPage({ page: { title: title } });
+  } catch (e) {}
+};
+
 export const createOrGetPageByName = async (title: string): Promise<string> => {
-  await window.roamAlphaAPI.createPage({ page: { title: title } });
+  await createPageByTitle(title);
   return getPageUidByPageTitle(title);
 };
 
@@ -63,12 +69,9 @@ export async function openPageByTitleOnSideBar(title: string) {
     },
   });
 }
+
 export async function openPageByTitle(title: string) {
-  await window.roamAlphaAPI.createPage({
-    page: {
-      title: title,
-    },
-  });
+  await createPageByTitle(title);
   window.roamAlphaAPI.ui.mainWindow.openPage({
     page: { title: title },
   });
