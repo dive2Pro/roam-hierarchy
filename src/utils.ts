@@ -3,10 +3,34 @@ import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTit
 export const generateId = () => {
   return window.roamAlphaAPI.util.generateUID();
 };
+const delay = (ms: number) => new Promise(resolve => {
+  setTimeout(resolve, ms)
+});
 
 const createPageByTitle = async (title: string) => {
   try {
-    await window.roamAlphaAPI.createPage({ page: { title: title } });
+    var uid = window.roamAlphaAPI.q(`
+    [
+      :find [?id ...]
+      :where
+        [?b :block/string ?s]
+        [?b :block/uid ?id]
+        [(clojure.string/blank? ?s )]
+    ]
+`)[0];
+    const page = title;
+ window
+      .roamAlphaAPI
+      .updateBlock(
+    	{
+    	 "block": 
+    		{"string": `[[${page}]]`, "uid": uid } } );
+    await delay(10)
+    window
+  .roamAlphaAPI
+  .updateBlock({"block": 
+                {"uid": uid, string: "" }})
+    
   } catch (e) {}
 };
 
