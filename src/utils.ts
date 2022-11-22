@@ -17,7 +17,7 @@ const createPageByTitle = async (title: string) => {
         [?b :block/uid ?id]
         [(clojure.string/blank? ?s )]
     ]
-`)[0];
+`)[0] as unknown as string;
     const page = title;
  window
       .roamAlphaAPI
