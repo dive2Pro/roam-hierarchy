@@ -3,14 +3,13 @@ import getPageUidByPageTitle from "roamjs-components/queries/getPageUidByPageTit
 export const generateId = () => {
   return window.roamAlphaAPI.util.generateUID();
 };
-const delay = (ms: number) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+const delay = (ms: number) => new Promise(resolve => {
+  setTimeout(resolve, ms)
+});
 
 const createPageByTitle = async (title: string) => {
   try {
-    let uid = window.roamAlphaAPI.q(`
+    var uid = window.roamAlphaAPI.q(`
     [
       :find [?id ...]
       :where
@@ -18,24 +17,20 @@ const createPageByTitle = async (title: string) => {
         [?b :block/uid ?id]
         [(clojure.string/blank? ?s )]
     ]
-`)?.[0] as unknown as string;
+`)[0] as unknown as string;
     const page = title;
-
-    if (uid) {
-      window.roamAlphaAPI.updateBlock({
-        block: { string: `[[${page}]]`, uid: uid },
-      });
-    } else {
-      uid = generateId();
-      const todayUid = window.roamAlphaAPI.util.dateToPageUid(new Date());
-      window.roamAlphaAPI.createBlock({
-        location: { "parent-uid": todayUid, order: 10000 },
-        block: { string: `[[${page}]]`, uid },
-      });
-    }
-
-    await delay(10);
-    window.roamAlphaAPI.updateBlock({ block: { uid: uid, string: "" } });
+ window
+      .roamAlphaAPI
+      .updateBlock(
+    	{
+    	 "block": 
+    		{"string": `[[${page}]]`, "uid": uid } } );
+    await delay(10)
+    window
+  .roamAlphaAPI
+  .updateBlock({"block": 
+                {"uid": uid, string: "" }})
+    
   } catch (e) {}
 };
 
