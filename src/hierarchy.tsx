@@ -298,6 +298,11 @@ function addStyle() {
   style.innerHTML = `
   .rm-hierarchy {
     margin-bottom: 10px;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
   }
   .rm-hierarchy .caret-title .rm-caret {
     opacity: 0;
