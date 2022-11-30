@@ -10,11 +10,67 @@ import ReactDOM from "react-dom";
 import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageUid";
 import getBlockUidsReferencingPage from "roamjs-components/queries/getBlockUidsReferencingPage";
 import getPageTitleByBlockUid from "roamjs-components/queries/getPageTitleByBlockUid";
-import { Button, Icon, Collapse } from "@blueprintjs/core";
+import {
+  Button,
+  Icon,
+  Collapse,
+  Popover,
+  MenuItem,
+  Menu,
+  IconName,
+  Tooltip,
+} from "@blueprintjs/core";
 import { BreadcrumbsBlock } from "./breadcrumbs-block";
 
 function Hierarchy() {
-  const [pages, setPages] = useState<{ title: string; uid: string }[]>([]);
+  const [pages, setPages] = useState<
+    { title: string; uid: string; time: number }[]
+  >([]);
+  const [sort, setSort] = useState({
+    sorts: [
+      {
+        icon: "sort",
+        text: "priority",
+        sort: () => 0,
+      },
+      {
+        icon: "sort-alphabetical",
+        text: "Alphabetical asc",
+        sort: (a, b) => {
+          return a.title.localeCompare(b.title);
+        },
+      },
+      {
+        icon: "sort-alphabetical-desc",
+        text: "Alphabetical desc",
+        sort: (a, b) => {
+          return b.title.localeCompare(a.title);
+        },
+      },
+      {
+        icon: "sort-asc",
+        text: "Edit time asc",
+        sort: (a, b) => {
+          return a.time - b.time;
+        },
+      },
+      {
+        icon: "sort-desc",
+        text: "Edit time desc",
+        sort: (a, b) => {
+          return b.time - a.time;
+        },
+      },
+    ] as {
+      icon: IconName;
+      text: string;
+      sort: (
+        a: { title: string; uid: string; time: number },
+        b: { title: string; uid: string; time: number }
+      ) => number;
+    }[],
+    index: 0,
+  });
   let titleRef = useRef("");
   async function getHierarchy() {
     const uid = await getCurrentPageUid();
@@ -26,7 +82,6 @@ function Hierarchy() {
     }
     const pages = await getPagesBaseonString(fulFillTile);
     const lastIndex = title.lastIndexOf("/");
-
     if (lastIndex > -1) titleRef.current = title.substring(0, lastIndex);
     setPages(
       pages
@@ -34,6 +89,7 @@ function Hierarchy() {
         .map((info) => ({
           title: info[0],
           uid: info[1],
+          time: info[2],
         }))
     );
   }
@@ -45,7 +101,7 @@ function Hierarchy() {
   }, [caretTitleVm.open]);
 
   const content = pages.length ? (
-    pages.map((info) => {
+    pages.sort(sort.sorts[sort.index].sort).map((info) => {
       return <HierarchyLink info={info} />;
     })
   ) : titleRef.current ? (
@@ -58,7 +114,45 @@ function Hierarchy() {
   }
   return (
     <div className="rm-hierarchy">
-      <div style={{ marginBottom: 5 }}>{caretTitleVm.Comp}</div>
+      <div style={{ marginBottom: 5, position: "relative" }}>
+        {caretTitleVm.Comp}
+        <div
+          style={{
+            position: "absolute",
+            right: 0,
+            top: 0,
+          }}
+        >
+          <Popover
+            usePortal={false}
+            content={
+              <Menu>
+                {sort.sorts.map((item, index) => {
+                  return (
+                    <MenuItem
+                      active={index === sort.index}
+                      icon={item.icon}
+                      text={item.text}
+                      onClick={() =>
+                        setSort((prev) => {
+                          return {
+                            ...prev,
+                            index,
+                          };
+                        })
+                      }
+                    ></MenuItem>
+                  );
+                })}
+              </Menu>
+            }
+          >
+            <Tooltip content={`Sort by ${sort.sorts[sort.index].text}`}>
+              <Button icon={sort.sorts[sort.index].icon} minimal small />
+            </Tooltip>
+          </Popover>
+        </div>
+      </div>
       {!caretTitleVm.open ? null : (
         <div className="rm-mentions refs-by-page-view">{content}</div>
       )}
@@ -254,25 +348,9 @@ function HierarchyMentions(props: { blocks: string[] }) {
   );
 }
 
-function ReferencingBlock(props: { uid: string }) {
-  const ref = useRef<HTMLDivElement>();
-  useEffect(() => {
-    window.roamAlphaAPI.ui.components.renderBlock({
-      uid: props.uid,
-      el: ref.current,
-    });
-  }, []);
-  return (
-    <div className="rm-reference-item">
-      <div ref={ref} />
-    </div>
-  );
-}
-
 export function hierarchyInit() {
   let unSub = () => {};
   const init = () => {
-    console.log("hierarchy initial");
     const el = document.createElement("div");
     const parent = document.querySelector(".rm-reference-main").children[0];
     parent.insertBefore(el, parent.childNodes[0]);
@@ -304,6 +382,13 @@ function addStyle() {
     -moz-user-select: none;
     -o-user-select: none;
     user-select: none;
+  }
+  .rm-hierarchy .bp3-menu-item {
+    outline: none;
+  }
+
+  .rm-hierarchy .bp3-menu-item a{
+    text-decoration: none;
   }
   .rm-hierarchy .caret-title .rm-caret {
     opacity: 0;

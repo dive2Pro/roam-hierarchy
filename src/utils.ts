@@ -39,7 +39,7 @@ export const getPagesBaseonString = async (str: string) => {
   [?page :edit/time ?time:date]
   [(clojure.string/starts-with? ?title:name "${str}")]] 
   `);
-  return result as [string, string][];
+  return result as [string, string, number][];
 };
 
 export const getCurrentPageUid = async () => {
