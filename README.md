@@ -2,9 +2,9 @@
 
 Namespace pages now display with hierarchy
 
-![](https://github.com/dive2Pro/roam-hierarchy/blob/main/Hierarchy%20demo.gif
+![](https://github.com/dive2Pro/roam-hierarchy/blob/main/Hierarchy%20demo.gif)
 
-![](demo2.gif)
+![](https://github.com/dive2Pro/roam-hierarchy/blob/main/demo2.gif)
 
 ## changelog
 
