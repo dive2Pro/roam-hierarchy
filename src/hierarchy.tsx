@@ -30,7 +30,7 @@ function Hierarchy() {
     sorts: [
       {
         icon: "sort",
-        text: "priority",
+        text: "Priority",
         sort: () => 0,
       },
       {
@@ -93,7 +93,10 @@ function Hierarchy() {
         }))
     );
   }
-  const caretTitleVm = useCaretTitle("Hierarchy");
+  const caretTitleVm = useCaretTitle(
+    // (pages.length ? `${pages.length} ` : "") +
+    "Hierarchy"
+  );
   useEffect(() => {
     if (caretTitleVm.open) {
       getHierarchy();
@@ -269,7 +272,7 @@ function HierarchyLink(props: { info: { title: string; uid: string } }) {
     [title]
   );
   return (
-    <div>
+    <div className="rm-mention">
       {referencingBlocks.length ? (
         caretTitleVm.Comp
       ) : (
@@ -329,7 +332,7 @@ function Mention({ info }: { info: { title: string; uids: string[] } }) {
           {info.uids.map((uid) => {
             return (
               <div style={{ marginBottom: 5 }} className="rm-reference-item">
-                <BreadcrumbsBlock uid={uid} />
+                <BreadcrumbsBlock uid={uid} showPage={false} />
               </div>
             );
           })}
@@ -392,25 +395,30 @@ function addStyle() {
   }
   .rm-hierarchy .caret-title .rm-caret {
     opacity: 0;
+    cursor: pointer;
   }
 
   .rm-hierarchy .page-group .icon-caret {
     opacity: 0;
   }
 
-  .rm-hierarchy:hover .caret-title .rm-caret{
+  .rm-hierarchy > div:first-child:hover .caret-title:first-child .rm-caret{
     opacity: 1;
+  }
+
+  .rm-mention {
+    margin-bottom: 5px;
   }
   .rm-hierarchy .page-group .icon-caret-open{
     opacity: 1;
    }
-  .rm-hierarchy:hover .page-group .icon-caret,.icon-caret-open{
-    opacity: 1;
-  }
+
+  .rm-mention:hover .caret-title .rm-caret{
+    opacity: 1 !important;
+   }
 
   .block-breadcrumbs {
     flex-wrap: wrap;
-    margin-bottom: 5px;
     display: flex;
     flex-direction: row;
     padding: 5px 5px 5px 8px;
@@ -420,23 +428,12 @@ function addStyle() {
     white-space: unset;
     align-items: center;
     display: inline-flex;
-    color: #5c7080;
     cursor: pointer;
+    font-size: 12px;
   }
 
   .page  .roam-block {
     position: relative;
-  }
-  .page > div:nth-child(2) > div > .rm-block-main:first-child .roam-block:after {
-    position: absolute;
-    top: 0;
-    content: "Page's 'block', better leave it empty";
-    bottom: 0;
-    right: 0;
-    left: 0;
-    line-height: 30px;
-    color: #b9b8b8;
-    background: var(--bc-main, white);
   }
 
   .page .rm-block-separator {

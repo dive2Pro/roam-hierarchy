@@ -43,14 +43,14 @@ const BlockEdit = ({ uid }: { uid: string }) => {
   return <div ref={ref} />;
 };
 
-export function BreadcrumbsBlock(props: { uid: string }) {
+export function BreadcrumbsBlock(props: { uid: string; showPage?: boolean }) {
   const [uid, setUid] = useState(props.uid);
   const [parents, setParents] = useState<ReversePullBlock[]>([]);
   useEffect(() => {
     const parentsBlocks = getStrFromParentsOf(uid);
     console.log(parentsBlocks);
-    setParents(parentsBlocks);
-  }, [uid]);
+    setParents(props.showPage ? parentsBlocks : parentsBlocks.slice(1));
+  }, [uid, props.showPage]);
 
   return (
     <div
@@ -97,28 +97,31 @@ export function BreadcrumbsBlock(props: { uid: string }) {
         }
       }}
     >
-      <div className="block-breadcrumbs">
-        {parents.map((block, index, ary) => {
-          const s = block[":block/string"] || block[":node/title"];
-          return (
-            <span
-              className="block-br-item"
-              onClick={() => {
-                setUid(block[":block/uid"]);
-              }}
-            >
-              {s}
-              {index < ary.length - 1 ? (
-                <Icon
-                  size={12}
-                  style={{ margin: "0 4px" }}
-                  icon="chevron-right"
-                />
-              ) : null}
-            </span>
-          );
-        })}
-      </div>
+      {parents.length ? (
+        <div className="block-breadcrumbs">
+          {parents.map((block, index, ary) => {
+            const s = block[":block/string"] || block[":node/title"];
+            return (
+              <span
+                className="block-br-item rm-page-ref--link"
+                onClick={() => {
+                  setUid(block[":block/uid"]);
+                }}
+              >
+                {s}
+                {index < ary.length - 1 ? (
+                  <Icon
+                    size={12}
+                    style={{ margin: "0 4px" }}
+                    icon="chevron-right"
+                  />
+                ) : null}
+              </span>
+            );
+          })}
+        </div>
+      ) : null}
+
       <BlockEdit uid={uid} key={uid} />
     </div>
   );
