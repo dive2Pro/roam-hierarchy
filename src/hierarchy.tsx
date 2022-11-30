@@ -11,6 +11,7 @@ import getPageTitleByPageUid from "roamjs-components/queries/getPageTitleByPageU
 import getBlockUidsReferencingPage from "roamjs-components/queries/getBlockUidsReferencingPage";
 import getPageTitleByBlockUid from "roamjs-components/queries/getPageTitleByBlockUid";
 import { Button, Icon, Collapse } from "@blueprintjs/core";
+import { BreadcrumbsBlock } from "./breadcrumbs-block";
 
 function Hierarchy() {
   const [pages, setPages] = useState<{ title: string; uid: string }[]>([]);
@@ -233,8 +234,8 @@ function Mention({ info }: { info: { title: string; uids: string[] } }) {
         <div className="" style={{ marginLeft: 4 }}>
           {info.uids.map((uid) => {
             return (
-              <div style={{ marginBottom: 5 }}>
-                <ReferencingBlock uid={uid} key={uid} />
+              <div style={{ marginBottom: 5 }} className="rm-reference-item">
+                <BreadcrumbsBlock uid={uid} />
               </div>
             );
           })}
@@ -320,6 +321,43 @@ function addStyle() {
    }
   .rm-hierarchy:hover .page-group .icon-caret,.icon-caret-open{
     opacity: 1;
+  }
+
+  .block-breadcrumbs {
+    flex-wrap: wrap;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: row;
+    padding: 5px 5px 5px 8px;
+  }
+
+  .block-breadcrumbs span.block-br-item {
+    white-space: unset;
+    align-items: center;
+    display: inline-flex;
+    color: #5c7080;
+    cursor: pointer;
+  }
+
+  .page  .roam-block {
+    position: relative;
+  }
+  .page > div:nth-child(2) > div > .rm-block-main:first-child .roam-block:after {
+    position: absolute;
+    top: 0;
+    content: "Page's 'block', better leave it empty";
+    bottom: 0;
+    right: 0;
+    left: 0;
+    line-height: 30px;
+    color: #b9b8b8;
+    background: var(--bc-main, white);
+  }
+
+  .page .rm-block-separator {
+    min-width: 0px;
+    max-width: 10px;
+    flex: 0 0 0px;
   }
     `;
   return () => {
