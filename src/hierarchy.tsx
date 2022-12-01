@@ -94,7 +94,6 @@ function Hierarchy() {
     if (lastIndex > -1) titleRef.current = title.substring(0, lastIndex);
     const config = readConfigFromUid(uid);
     setSort((prev) => ({ ...prev, index: config.sort }));
-
     const pageInfos = pages
       .filter((info) => info[0] !== title)
       .map((info) => {
@@ -118,7 +117,7 @@ function Hierarchy() {
     setLevel((prev) => ({
       ...prev,
       max: maxLevel,
-      current: config.level === 0 ? maxLevel : config.level,
+      current: !!config.level ? config.level : maxLevel,
     }));
 
     setPages(pageInfos);
@@ -153,75 +152,79 @@ function Hierarchy() {
     <div className="rm-hierarchy">
       <div style={{ marginBottom: 5, position: "relative" }}>
         {caretTitleVm.Comp}
-        <div
-          style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-          }}
-        >
-          <Popover
-            autoFocus={false}
-            enforceFocus={false}
-            content={
-              <Menu>
-                <MenuItem text="sorts">
-                  {sort.sorts.map((item, index) => {
-                    return (
-                      <MenuItem
-                        active={index === sort.index}
-                        icon={item.icon}
-                        text={item.text}
-                        onClick={() => {
-                          setSort((prev) => {
-                            return {
-                              ...prev,
-                              index,
-                            };
-                          });
+        {!caretTitleVm.open ? null : (
+          <div
+            style={{
+              position: "absolute",
+              right: 0,
+              top: 0,
+            }}
+          >
+            <Popover
+              autoFocus={false}
+              enforceFocus={false}
+              content={
+                <Menu>
+                  <MenuItem text="sorts">
+                    {sort.sorts.map((item, index) => {
+                      return (
+                        <MenuItem
+                          active={index === sort.index}
+                          icon={item.icon}
+                          text={item.text}
+                          onClick={() => {
+                            setSort((prev) => {
+                              return {
+                                ...prev,
+                                index,
+                              };
+                            });
 
+                            saveConfigByUid(uidRef.current, {
+                              level: level.current,
+                              sort: index,
+                            });
+                          }}
+                        ></MenuItem>
+                      );
+                    })}
+                  </MenuItem>
+                  {level.min === level.max ? null : (
+                    <MenuItem text="deep level">
+                      <Slider
+                        stepSize={1}
+                        min={1}
+                        max={level.max}
+                        value={level.current}
+                        onChange={(v) =>
+                          setLevel((prev) => ({ ...prev, current: v }))
+                        }
+                        onRelease={(v) => {
+                          setLevel((prev) => ({ ...prev, current: v }));
                           saveConfigByUid(uidRef.current, {
-                            level: level.current,
-                            sort: index,
+                            level: v,
+                            sort: sort.index,
                           });
                         }}
-                      ></MenuItem>
-                    );
-                  })}
-                </MenuItem>
-                <MenuItem text="deep level">
-                  <Slider
-                    stepSize={1}
-                    min={1}
-                    max={level.max}
-                    value={level.current}
-                    onChange={(v) =>
-                      setLevel((prev) => ({ ...prev, current: v }))
-                    }
-                    onRelease={(v) => {
-                      setLevel((prev) => ({ ...prev, current: v }));
-                      saveConfigByUid(uidRef.current, {
-                        level: v,
-                        sort: sort.index,
-                      });
-                    }}
-                  ></Slider>
-                </MenuItem>
-              </Menu>
-            }
-          >
-            <Button
-              small
-              minimal
-              icon="cog"
-              intent={
-                level.current !== level.max || sort.index !== 0
-                  ? "danger"
-                  : "none"
+                      ></Slider>
+                    </MenuItem>
+                  )}
+                </Menu>
               }
-            />
-          </Popover>
-        </div>
+            >
+              <Button
+                small
+                minimal
+                icon="cog"
+                intent={
+                  level.current !== level.max || sort.index !== 0
+                    ? "danger"
+                    : "none"
+                }
+              />
+            </Popover>
+          </div>
+        )}
       </div>
       {!caretTitleVm.open ? null : (
         <div className="rm-mentions refs-by-page-view">{content}</div>
@@ -309,7 +312,7 @@ function SpansLink(props: { spans: string[] }) {
 const NoChildLink = (props: { children: any }) => {
   return (
     <div
-      className="flex-h-box"
+      className="flex-h-box caret-title"
       style={{ justifyItems: "center", alignItems: "center" }}
     >
       <Icon
@@ -317,7 +320,7 @@ const NoChildLink = (props: { children: any }) => {
         style={{ margin: "0 6px 0 6px" }}
         icon="circle"
         size={6}
-      ></Icon>
+      />
       <strong
         style={{
           color: "rgb(206, 217, 224)",
@@ -460,13 +463,12 @@ function addStyle() {
   .rm-hierarchy .bp3-menu-item a{
     text-decoration: none;
   }
-  .rm-hierarchy .caret-title .rm-caret {
-    opacity: 0;
-    cursor: pointer;
-  }
 
-  .rm-hierarchy .page-group .icon-caret {
+  .rm-mention .caret-title  .bp3-icon {
     opacity: 0;
+  }
+  .rm-mention:hover .caret-title .bp3-icon {
+    opacity: 1;
   }
 
   .rm-hierarchy > div:first-child:hover .caret-title:first-child .rm-caret{
@@ -476,14 +478,11 @@ function addStyle() {
   .rm-mention {
     margin-bottom: 5px;
   }
-  .rm-hierarchy .page-group .icon-caret-open{
+  .rm-hierarchy .caret-title  .bp3-icon-caret-down{
     opacity: 1;
    }
 
-  .rm-mention:hover .caret-title .rm-caret{
-    opacity: 1 !important;
-   }
-
+  
   .block-breadcrumbs {
     flex-wrap: wrap;
     display: flex;
