@@ -210,7 +210,16 @@ function Hierarchy() {
               </Menu>
             }
           >
-            <Button small minimal icon="cog" />
+            <Button
+              small
+              minimal
+              icon="cog"
+              intent={
+                level.current !== level.max || sort.index !== 0
+                  ? "danger"
+                  : "none"
+              }
+            />
           </Popover>
         </div>
       </div>
