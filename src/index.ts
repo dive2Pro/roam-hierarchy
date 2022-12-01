@@ -1,7 +1,9 @@
 import { hierarchyInit } from "./hierarchy";
+import { initAPI } from "./settings";
 
-let initial = (extensionAPI: any) => {
+let initial = (extensionAPI: RoamExtensionAPI) => {
   const hierarchyUnload = hierarchyInit();
+  initAPI(extensionAPI);
   return () => {
     hierarchyUnload();
   };
@@ -9,7 +11,7 @@ let initial = (extensionAPI: any) => {
 
 let initialed = () => {};
 
-function onload({ extensionAPI }: any) {
+function onload({ extensionAPI }: { extensionAPI: RoamExtensionAPI }) {
   initialed = initial(extensionAPI);
 }
 
@@ -17,9 +19,6 @@ function onunload() {
   initialed();
 }
 
-if (!process.env.ROAM_DEPOT) {
-  hierarchyInit();
-}
 export default {
   onload,
   onunload,

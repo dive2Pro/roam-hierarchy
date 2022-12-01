@@ -13,18 +13,20 @@ import getPageTitleByBlockUid from "roamjs-components/queries/getPageTitleByBloc
 import {
   Button,
   Icon,
-  Collapse,
   Popover,
   MenuItem,
   Menu,
   IconName,
   Tooltip,
+  Slider,
+  Label,
 } from "@blueprintjs/core";
 import { BreadcrumbsBlock } from "./breadcrumbs-block";
+import { readConfigFromUid, saveConfigByUid } from "./settings";
 
 function Hierarchy() {
   const [pages, setPages] = useState<
-    { title: string; uid: string; time: number }[]
+    { title: string; uid: string; time: number; level: number }[]
   >([]);
   const [sort, setSort] = useState({
     sorts: [
@@ -71,9 +73,16 @@ function Hierarchy() {
     }[],
     index: 0,
   });
+  const [level, setLevel] = useState({
+    min: 1,
+    max: 1,
+    current: 1,
+  });
+  const uidRef = useRef("");
   let titleRef = useRef("");
   async function getHierarchy() {
     const uid = await getCurrentPageUid();
+    uidRef.current = uid;
     const title = getPageTitleByPageUid(uid);
     let fulFillTile = title;
     if (title.includes("/")) {
@@ -83,19 +92,39 @@ function Hierarchy() {
     const pages = await getPagesBaseonString(fulFillTile);
     const lastIndex = title.lastIndexOf("/");
     if (lastIndex > -1) titleRef.current = title.substring(0, lastIndex);
-    setPages(
-      pages
-        .filter((info) => info[0] !== title)
-        .map((info) => ({
+    const config = readConfigFromUid(uid);
+    setSort((prev) => ({ ...prev, index: config.sort }));
+
+    const pageInfos = pages
+      .filter((info) => info[0] !== title)
+      .map((info) => {
+        const t = info[0].substring(fulFillTile.length + 1);
+
+        return {
           title: info[0],
           uid: info[1],
           time: info[2],
-        }))
+          level: t.split("/").length,
+        };
+      });
+
+    const maxLevel = Math.max(
+      ...pageInfos.map((info) => {
+        return info.level;
+      }),
+      1
     );
+
+    setLevel((prev) => ({
+      ...prev,
+      max: maxLevel,
+      current: config.level === 0 ? maxLevel : config.level,
+    }));
+
+    setPages(pageInfos);
   }
   const caretTitleVm = useCaretTitle(
-    // (pages.length ? `${pages.length} ` : "") +
-    "Hierarchy"
+    (pages.length ? `${pages.length} ` : "") + "Hierarchy"
   );
   useEffect(() => {
     if (caretTitleVm.open) {
@@ -104,9 +133,14 @@ function Hierarchy() {
   }, [caretTitleVm.open]);
 
   const content = pages.length ? (
-    pages.sort(sort.sorts[sort.index].sort).map((info) => {
-      return <HierarchyLink info={info} />;
-    })
+    pages
+      .sort(sort.sorts[sort.index].sort)
+      .filter((page) => {
+        return page.level <= level.current;
+      })
+      .map((info) => {
+        return <HierarchyLink info={info} />;
+      })
   ) : titleRef.current ? (
     <NoChildLink>
       <SpansLink spans={titleRef.current.split("/")} />
@@ -127,32 +161,56 @@ function Hierarchy() {
           }}
         >
           <Popover
-            usePortal={false}
+            autoFocus={false}
+            enforceFocus={false}
             content={
               <Menu>
-                {sort.sorts.map((item, index) => {
-                  return (
-                    <MenuItem
-                      active={index === sort.index}
-                      icon={item.icon}
-                      text={item.text}
-                      onClick={() =>
-                        setSort((prev) => {
-                          return {
-                            ...prev,
-                            index,
-                          };
-                        })
-                      }
-                    ></MenuItem>
-                  );
-                })}
+                <MenuItem text="sorts">
+                  {sort.sorts.map((item, index) => {
+                    return (
+                      <MenuItem
+                        active={index === sort.index}
+                        icon={item.icon}
+                        text={item.text}
+                        onClick={() => {
+                          setSort((prev) => {
+                            return {
+                              ...prev,
+                              index,
+                            };
+                          });
+
+                          saveConfigByUid(uidRef.current, {
+                            level: level.current,
+                            sort: index,
+                          });
+                        }}
+                      ></MenuItem>
+                    );
+                  })}
+                </MenuItem>
+                <MenuItem text="deep level">
+                  <Slider
+                    stepSize={1}
+                    min={1}
+                    max={level.max}
+                    value={level.current}
+                    onChange={(v) =>
+                      setLevel((prev) => ({ ...prev, current: v }))
+                    }
+                    onRelease={(v) => {
+                      setLevel((prev) => ({ ...prev, current: v }));
+                      saveConfigByUid(uidRef.current, {
+                        level: v,
+                        sort: sort.index,
+                      });
+                    }}
+                  ></Slider>
+                </MenuItem>
               </Menu>
             }
           >
-            <Tooltip content={`Sort by ${sort.sorts[sort.index].text}`}>
-              <Button icon={sort.sorts[sort.index].icon} minimal small />
-            </Tooltip>
+            <Button small minimal icon="cog" />
           </Popover>
         </div>
       </div>
@@ -440,6 +498,14 @@ function addStyle() {
     min-width: 0px;
     max-width: 10px;
     flex: 0 0 0px;
+  }
+
+  .rm-hierarchy .levels {
+    display: flex;
+  }
+  .rm-hierarchy .levels .bp3-slider {
+    width: 100px;
+    margin-left: 10px;
   }
     `;
   return () => {
