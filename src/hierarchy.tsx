@@ -464,7 +464,7 @@ function addStyle() {
     text-decoration: none;
   }
 
-  .rm-mention .caret-title  .bp3-icon {
+  .rm-mention .caret-title  .bp3-icon-caret-right {
     opacity: 0;
   }
   .rm-mention:hover .caret-title .bp3-icon {
