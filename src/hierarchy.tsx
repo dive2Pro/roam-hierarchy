@@ -122,20 +122,21 @@ function Hierarchy() {
 
     setPages(pageInfos);
   }
-  const caretTitleVm = useCaretTitle(
-    (pages.length ? `${pages.length} ` : "") + "Hierarchy"
-  );
-  useEffect(() => {
-    if (caretTitleVm.open) {
-      getHierarchy();
-    }
-  }, [caretTitleVm.open]);
 
   const content = pages.length ? (
     pages
       .sort(sort.sorts[sort.index].sort)
-      .filter((page) => {
-        return page.level <= level.current;
+      .map((page) => {
+        return {
+          ...page,
+          title: page.title
+            .split("/")
+            .slice(0, level.current + 1)
+            .join("/"),
+        };
+      })
+      .filter((page, index, arr) => {
+        return index === arr.findIndex((item) => item.title === page.title);
       })
       .map((info) => {
         return <HierarchyLink info={info} />;
@@ -145,6 +146,23 @@ function Hierarchy() {
       <SpansLink spans={titleRef.current.split("/")} />
     </NoChildLink>
   ) : null;
+
+  const caretTitleVm = useCaretTitle(
+    (pages.length
+      ? `${
+          (content as []).length !== pages.length
+            ? (content as []).length + "/"
+            : ""
+        }${pages.length} `
+      : "") + "Hierarchy"
+  );
+
+  useEffect(() => {
+    if (caretTitleVm.open) {
+      getHierarchy();
+    }
+  }, [caretTitleVm.open]);
+
   if (!content) {
     return null;
   }
