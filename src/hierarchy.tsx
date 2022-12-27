@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
+import "./style.css"
 import {
   getCurrentPageUid,
   getPagesBaseonString,
@@ -77,6 +78,7 @@ function Hierarchy() {
     min: 1,
     max: 1,
     current: 1,
+    pageLevel: 1,
   });
   const uidRef = useRef("");
   let titleRef = useRef("");
@@ -98,7 +100,6 @@ function Hierarchy() {
       .filter((info) => info[0] !== title)
       .map((info) => {
         const t = info[0].substring(fulFillTile.length + 1);
-
         return {
           title: info[0],
           uid: info[1],
@@ -113,11 +114,11 @@ function Hierarchy() {
       }),
       1
     );
-
     setLevel((prev) => ({
       ...prev,
       max: maxLevel,
       current: !!config.level ? config.level : maxLevel,
+      pageLevel: title.split("/").length
     }));
 
     setPages(pageInfos);
@@ -131,7 +132,7 @@ function Hierarchy() {
           ...page,
           title: page.title
             .split("/")
-            .slice(0, level.current + 1)
+            .slice(0, level.current + level.pageLevel)
             .join("/"),
         };
       })
