@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect, useMemo } from "react";
-import "./style.css"
+import React, { useRef, useState, useEffect, useMemo, FC } from "react";
+import "./style.css";
 import {
   getCurrentPageUid,
   getPagesBaseonString,
@@ -21,9 +21,134 @@ import {
   Tooltip,
   Slider,
   Label,
+  Dialog,
+  MultistepDialog,
+  DialogStep,
+  Classes,
+  InputGroup,
+  Divider,
 } from "@blueprintjs/core";
 import { BreadcrumbsBlock } from "./breadcrumbs-block";
 import { readConfigFromUid, saveConfigByUid } from "./settings";
+
+const delay = (ms = 10) => new Promise(resolve => setTimeout(resolve, ms));
+const InputPanel: React.FC<{ value: string; onChange: (v: string) => void }> = (
+  props
+) => (
+  <div className={Classes.DIALOG_BODY}>
+    <InputGroup
+      value={props.value}
+      onChange={(e) => props.onChange(e.target.value)}
+    />
+  </div>
+);
+
+function useTitleChangeStatus(props: { value?: string }) {
+  const [state, setState] = useState({ isOpen: false, value: props.value, origin: '' });
+
+  const result =  {
+    state,
+    onValueChange: (v: string) => setState((prev) => ({ ...prev, value: v })),
+    setOriginTitle: (v: string) => setState((prev) => ({...prev, origin: v})),
+    toggle: (next?: boolean) => {
+      setState((prev) => ({ ...prev, isOpen: next ?? !prev.isOpen }));
+      result.onValueChange(state.origin)
+    }
+  };
+  return result;
+}
+
+const ConfirmPanel: FC = (props) => {
+  
+  return (
+    <div className={Classes.DIALOG_BODY}>
+      <p>Effected Pages</p>
+      <Divider />
+      <p style={{ maxHeight: 300, overflow: 'auto' }}>
+        {props.children}
+      </p>
+    </div>
+  );
+}
+
+const changePagesTitle = (pages: [string, string, number][], title: string, value: string) => {
+  pages.forEach(page => {
+    window.roamAlphaAPI.updatePage({
+      page: {
+        title: page[0].replace(title, value),
+        uid: page[1]
+      }
+    });
+
+  })
+}
+
+function TitleChangeDialog(props: ReturnType<typeof useTitleChangeStatus> & { onSubmit: () => void}) {
+  const [effectedPages, setEffectedPages] = useState<
+    [string, string, number][]
+  >([]);
+  useEffect(() => {
+    const mount = async () => {
+      const pages = await getPagesBaseonString(props.state.origin);
+      console.log(pages, " = pages");
+      setEffectedPages(pages);
+    };
+    mount();
+  }, [props.state.origin]);
+
+  return (
+    <MultistepDialog
+      icon="info-sign"
+      onClose={() => props.toggle(false)}
+      isOpen={props.state.isOpen}
+      nextButtonProps={{
+        // disabled: this.state.value === undefined,
+        disabled: props.state.origin === props.state.value,
+
+        // tooltipContent:
+        //   this.state.value === undefined
+        //     ? "Select an option to continue"
+        //     : undefined,
+      }}
+      finalButtonProps={{
+        onClick: async () => {
+          changePagesTitle(effectedPages, props.state.origin, props.state.value);
+          await delay(10);
+          props.toggle();
+          props.onSubmit();
+        },
+      }}
+      title={"Change Title"}
+    >
+      <DialogStep
+        id="select"
+        panel={
+          <InputPanel
+            onChange={props.onValueChange}
+            value={props.state.value}
+          />
+        }
+        title="Title Input"
+      />
+      <DialogStep
+        id="confirm"
+        panel={
+          <ConfirmPanel>
+            {effectedPages.map((page) => {
+              return (
+                <div>
+                  <span>{page[0]}</span> <Icon icon="arrow-right" />{" "}
+                  <span>{page[0].replace(props.state.origin, props.state.value)}</span>
+                </div>
+              );
+            })}
+          </ConfirmPanel>
+        }
+        title="Confirm"
+      />
+    </MultistepDialog>
+  );
+}
 
 function Hierarchy() {
   const [pages, setPages] = useState<
@@ -82,6 +207,8 @@ function Hierarchy() {
   });
   const uidRef = useRef("");
   let titleRef = useRef("");
+  const titleChangeStatus = useTitleChangeStatus({ value: titleRef.current });
+
   async function getHierarchy() {
     const uid = await getCurrentPageUid();
     uidRef.current = uid;
@@ -91,6 +218,8 @@ function Hierarchy() {
     } else {
       fulFillTile = `${title}/`;
     }
+    titleChangeStatus.setOriginTitle(title);
+    titleChangeStatus.onValueChange(title);
     const pages = await getPagesBaseonString(fulFillTile);
     const lastIndex = title.lastIndexOf("/");
     if (lastIndex > -1) titleRef.current = title.substring(0, lastIndex);
@@ -118,7 +247,7 @@ function Hierarchy() {
       ...prev,
       max: maxLevel,
       current: !!config.level ? config.level : maxLevel,
-      pageLevel: title.split("/").length
+      pageLevel: title.split("/").length,
     }));
 
     setPages(pageInfos);
@@ -163,7 +292,6 @@ function Hierarchy() {
       getHierarchy();
     }
   }, [caretTitleVm.open]);
-
   if (!content) {
     return null;
   }
@@ -171,6 +299,10 @@ function Hierarchy() {
     <div className="rm-hierarchy">
       <div style={{ marginBottom: 5, position: "relative" }}>
         {caretTitleVm.Comp}
+        <TitleChangeDialog {...titleChangeStatus} onSubmit={() => {
+          caretTitleVm.toggle();
+          caretTitleVm.toggle();
+        }} />
         {!caretTitleVm.open ? null : (
           <div
             style={{
@@ -184,6 +316,13 @@ function Hierarchy() {
               enforceFocus={false}
               content={
                 <Menu>
+                  <MenuItem
+                    text="Change Title"
+                    icon="edit"
+                    onClick={() => {
+                      titleChangeStatus.toggle();
+                    }}
+                  />
                   <MenuItem text="sorts">
                     {sort.sorts.map((item, index) => {
                       return (
@@ -262,6 +401,7 @@ const useCaretTitle = (children?: any, initOpen = true) => {
         {children}
       </CaretTitle>
     ),
+    toggle: () => setOpen(prev => !prev)
   };
 };
 
