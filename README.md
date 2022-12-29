@@ -6,6 +6,13 @@ Namespace pages now display with hierarchy
 
 ## changelog
 
+### 2022/12/29
+
+- hierarchy can now update the titles of subhierarchy pages by updating the current page title
+
+![al](https://user-images.githubusercontent.com/23192045/209928883-df044963-732b-4344-9bf4-c703fb8b0cb1.gif)
+
+
 ### 2022/12/1
 
 - hierarchy can now set the display level
