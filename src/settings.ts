@@ -1,26 +1,10 @@
+import { initPanel } from "./settings-panel";
+
 let extensionAPI: RoamExtensionAPI;
 
 export const initAPI = (api: RoamExtensionAPI) => {
   extensionAPI = api;
-  api.settings.panel.create({
-    tabTitle: 'Roam Hierarchy',
-    settings: [
-      {
-        id: 'brackets',
-        name: "Toggle brackets",
-        description: "",
-        action: {
-          type: "switch",
-          onChange: (e: any) => {
-            const el = document.querySelector(".rm-reference-main") as HTMLElement
-            !e.target.checked ? el.classList.add('no-brackets') : el.classList.remove('no-brackets')
-          }
-        },
-      }
-    ]
-  });
-  const v = api.settings.get("brackets");
-  api.settings.set('brackets', v ?? true )
+  initPanel(api);
 };
 
 const CONFIG_PREFIX = "config-";
@@ -51,3 +35,6 @@ export const saveConfigByUid = (uid: string, config: Config) => {
   extensionAPI.settings.set(key, JSON.stringify(config));
 };
 
+export const isHomonymsEnabled = () => {
+  return !!extensionAPI.settings.get("homonyms");
+}

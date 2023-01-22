@@ -2,8 +2,8 @@ import { hierarchyInit } from "./hierarchy";
 import { initAPI } from "./settings";
 
 let initial = (extensionAPI: RoamExtensionAPI) => {
-  const hierarchyUnload = hierarchyInit();
   initAPI(extensionAPI);
+  const hierarchyUnload = hierarchyInit();
   return () => {
     hierarchyUnload();
   };

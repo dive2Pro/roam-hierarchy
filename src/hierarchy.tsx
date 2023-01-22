@@ -3,6 +3,7 @@ import "./style.css";
 import {
   getCurrentPageUid,
   getPagesBaseonString,
+  getPagesContainsString,
   onRouteChange,
   openPageByTitle,
   openPageByTitleOnSideBar,
@@ -29,9 +30,9 @@ import {
   Divider,
 } from "@blueprintjs/core";
 import { BreadcrumbsBlock } from "./breadcrumbs-block";
-import { readConfigFromUid, saveConfigByUid } from "./settings";
+import { isHomonymsEnabled, readConfigFromUid, saveConfigByUid } from "./settings";
 
-const delay = (ms = 10) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms = 10) => new Promise((resolve) => setTimeout(resolve, ms));
 const InputPanel: React.FC<{ value: string; onChange: (v: string) => void }> = (
   props
 ) => (
@@ -44,46 +45,52 @@ const InputPanel: React.FC<{ value: string; onChange: (v: string) => void }> = (
 );
 
 function useTitleChangeStatus(props: { value?: string }) {
-  const [state, setState] = useState({ isOpen: false, value: props.value, origin: '' });
+  const [state, setState] = useState({
+    isOpen: false,
+    value: props.value,
+    origin: "",
+  });
 
-  const result =  {
+  const result = {
     state,
     onValueChange: (v: string) => setState((prev) => ({ ...prev, value: v })),
-    setOriginTitle: (v: string) => setState((prev) => ({...prev, origin: v})),
+    setOriginTitle: (v: string) => setState((prev) => ({ ...prev, origin: v })),
     toggle: (next?: boolean) => {
       setState((prev) => ({ ...prev, isOpen: next ?? !prev.isOpen }));
-      result.onValueChange(state.origin)
-    }
+      result.onValueChange(state.origin);
+    },
   };
   return result;
 }
 
 const ConfirmPanel: FC = (props) => {
-  
   return (
     <div className={Classes.DIALOG_BODY}>
       <p>Effected Pages</p>
       <Divider />
-      <p style={{ maxHeight: 300, overflow: 'auto' }}>
-        {props.children}
-      </p>
+      <p style={{ maxHeight: 300, overflow: "auto" }}>{props.children}</p>
     </div>
   );
-}
+};
 
-const changePagesTitle = (pages: [string, string, number][], title: string, value: string) => {
-  pages.forEach(page => {
+const changePagesTitle = (
+  pages: [string, string, number][],
+  title: string,
+  value: string
+) => {
+  pages.forEach((page) => {
     window.roamAlphaAPI.updatePage({
       page: {
         title: page[0].replace(title, value),
-        uid: page[1]
-      }
+        uid: page[1],
+      },
     });
+  });
+};
 
-  })
-}
-
-function TitleChangeDialog(props: ReturnType<typeof useTitleChangeStatus> & { onSubmit: () => void}) {
+function TitleChangeDialog(
+  props: ReturnType<typeof useTitleChangeStatus> & { onSubmit: () => void }
+) {
   const [effectedPages, setEffectedPages] = useState<
     [string, string, number][]
   >([]);
@@ -112,7 +119,11 @@ function TitleChangeDialog(props: ReturnType<typeof useTitleChangeStatus> & { on
       }}
       finalButtonProps={{
         onClick: async () => {
-          changePagesTitle(effectedPages, props.state.origin, props.state.value);
+          changePagesTitle(
+            effectedPages,
+            props.state.origin,
+            props.state.value
+          );
           await delay(10);
           props.toggle();
           props.onSubmit();
@@ -138,7 +149,9 @@ function TitleChangeDialog(props: ReturnType<typeof useTitleChangeStatus> & { on
               return (
                 <div>
                   <span>{page[0]}</span> <Icon icon="arrow-right" />{" "}
-                  <span>{page[0].replace(props.state.origin, props.state.value)}</span>
+                  <span>
+                    {page[0].replace(props.state.origin, props.state.value)}
+                  </span>
                 </div>
               );
             })}
@@ -299,10 +312,13 @@ function Hierarchy() {
     <div className="rm-hierarchy">
       <div style={{ marginBottom: 5, position: "relative" }}>
         {caretTitleVm.Comp}
-        <TitleChangeDialog {...titleChangeStatus} onSubmit={() => {
-          caretTitleVm.toggle();
-          caretTitleVm.toggle();
-        }} />
+        <TitleChangeDialog
+          {...titleChangeStatus}
+          onSubmit={() => {
+            caretTitleVm.toggle();
+            caretTitleVm.toggle();
+          }}
+        />
         {!caretTitleVm.open ? null : (
           <div
             style={{
@@ -391,6 +407,84 @@ function Hierarchy() {
   );
 }
 
+function Homonyms() {
+  const [pages, setPages] = useState<{ title: string; uid: string }[]>([]);
+  const uidRef = useRef("");
+  let titleRef = useRef("");
+
+  async function getHomonyms() {
+    const uid = await getCurrentPageUid();
+    uidRef.current = uid;
+    const title = getPageTitleByPageUid(uid);
+
+    let fulFillTile = title;
+    if (title.includes("/")) {
+      fulFillTile = title.split("/").pop();
+    } else {
+    }
+
+    const pages = await getPagesContainsString(fulFillTile);
+
+    const pageInfos = pages
+      .filter((info) => info[0] !== title)
+      .filter((info) => {
+        return info[0].split("/").pop() === fulFillTile;
+      })
+      .map((info) => {
+        return {
+          title: info[0],
+          uid: info[1],
+          time: info[2],
+        };
+      });
+
+    setPages(pageInfos);
+  }
+
+  const content = pages.length ? (
+    pages
+      .filter((page, index, arr) => {
+        return index === arr.findIndex((item) => item.title === page.title);
+      })
+      .map((info) => {
+        return <HierarchyLink info={info} />;
+      })
+  ) : titleRef.current ? (
+    <NoChildLink>
+      <SpansLink spans={titleRef.current.split("/")} />
+    </NoChildLink>
+  ) : null;
+
+  const caretTitleVm = useCaretTitle(
+    (pages.length
+      ? `${
+          (content as []).length !== pages.length
+            ? (content as []).length + "/"
+            : ""
+        }${pages.length} `
+      : "") + "Homonyms"
+  );
+
+  useEffect(() => {
+    if (caretTitleVm.open) {
+      getHomonyms();
+    }
+  }, [caretTitleVm.open]);
+  if (!content) {
+    return null;
+  }
+  return (
+    <div className="rm-hierarchy">
+      <div style={{ marginBottom: 5, position: "relative" }}>
+        {caretTitleVm.Comp}
+      </div>
+      {!caretTitleVm.open ? null : (
+        <div className="rm-mentions refs-by-page-view">{content}</div>
+      )}
+    </div>
+  );
+}
+
 const useCaretTitle = (children?: any, initOpen = true) => {
   const [open, setOpen] = useState(initOpen);
 
@@ -401,7 +495,7 @@ const useCaretTitle = (children?: any, initOpen = true) => {
         {children}
       </CaretTitle>
     ),
-    toggle: () => setOpen(prev => !prev)
+    toggle: () => setOpen((prev) => !prev),
   };
 };
 
@@ -580,13 +674,27 @@ function HierarchyMentions(props: { blocks: string[] }) {
   );
 }
 
+function App() {
+  
+  return (
+    <>
+      <Hierarchy />
+      {isHomonymsEnabled() ? <Homonyms /> : null }
+    </>
+  );
+}
+export function renderApp() {
+  const el = document.querySelector(".rm-hierarchy-el");
+  if (el) ReactDOM.render(<App />, el);
+}
 export function hierarchyInit() {
   let unSub = () => {};
   const init = () => {
     const el = document.createElement("div");
+    el.className = "rm-hierarchy-el";
     const parent = document.querySelector(".rm-reference-main").children[0];
     parent.insertBefore(el, parent.childNodes[0]);
-    ReactDOM.render(<Hierarchy />, el);
+    ReactDOM.render(<App />, el);
     unSub = () => {
       parent.removeChild(el);
     };
@@ -637,7 +745,11 @@ function addStyle() {
   .rm-mention {
     margin-bottom: 5px;
   }
+
   .rm-hierarchy .caret-title  .bp3-icon-caret-down{
+    opacity: 0;
+   }
+   .rm-hierarchy .caret-title  .bp3-icon-caret-down:hover{
     opacity: 1;
    }
 

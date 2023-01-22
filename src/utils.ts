@@ -42,6 +42,18 @@ export const getPagesBaseonString = async (str: string) => {
   return result as [string, string, number][];
 };
 
+export const getPagesContainsString = async (str: string) => {
+  const result = await window.roamAlphaAPI.q(`
+ [
+  :find ?title:name ?title:uid
+  :where 
+  [?page :node/title ?title:name]
+  [?page :block/uid ?title:uid]
+  [(clojure.string/includes? ?title:name "${str}")]] 
+  `);
+  return result as [string, string, number][];
+}
+
 export const getCurrentPageUid = async () => {
   const blockOrPageUid =
     await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
