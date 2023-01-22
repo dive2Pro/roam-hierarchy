@@ -6,6 +6,13 @@ Namespace pages now display with hierarchy
 
 ## changelog
 
+### 2023/1/22
+
+- add "Homonyms". You can toggle it on settings panel
+
+![image](https://user-images.githubusercontent.com/23192045/213916167-45f8d91c-6eae-407b-9125-9f5aa14bf8f9.png)
+
+
 ### 2022/12/29
 
 - hierarchy can now update the titles of subhierarchy pages by updating the current page title
