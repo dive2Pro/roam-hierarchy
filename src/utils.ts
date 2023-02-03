@@ -30,6 +30,9 @@ export const onRouteChange = (cb: () => void) => {
 };
 
 export const getPagesBaseonString = async (str: string) => {
+  if (!str.endsWith("/")) {
+    str = str + "/"
+  }
   const result = await window.roamAlphaAPI.q(`
  [
   :find ?title:name ?title:uid ?time:date
