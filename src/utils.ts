@@ -41,8 +41,8 @@ export const getPagesBaseonString = async (str: string) => {
   [?page :block/uid ?title:uid]
   [?page :edit/time ?time:date]
   [(clojure.string/starts-with? ?title:name "${str}")]] 
-  `);
-  return result as [string, string, number][];
+  `) as [string, string, number][];
+  return result;
 };
 
 export const getPagesContainsString = async (str: string) => {
