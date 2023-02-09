@@ -43,7 +43,8 @@ const BlockEdit = ({ uid }: { uid: string }) => {
   return <div ref={ref} />;
 };
 
-export function BreadcrumbsBlock(props: { uid: string; showPage?: boolean }) {
+// @deprected
+export function OldBreadcrumbsBlock(props: { uid: string; showPage?: boolean }) {
   const [uid, setUid] = useState(props.uid);
   const [parents, setParents] = useState<ReversePullBlock[]>([]);
   useEffect(() => {
@@ -125,4 +126,18 @@ export function BreadcrumbsBlock(props: { uid: string; showPage?: boolean }) {
       <BlockEdit uid={uid} key={uid} />
     </div>
   );
+}
+
+export function BreadcrumbsBlock(props: { uid: string; showPage?: boolean }) {
+  const ref = useRef()
+  useEffect(() => {
+    window.roamAlphaAPI.ui.components.renderBlock({
+      uid: props.uid,
+      el: ref.current,
+      // @ts-ignore
+      "zoom-path?": true
+    })
+  }, [props.uid])
+
+  return <div ref={ref} />
 }
