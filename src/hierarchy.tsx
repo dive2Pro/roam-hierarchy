@@ -690,14 +690,19 @@ export function renderApp() {
 }
 export function hierarchyInit() {
   let unSub = () => {};
-  const init = () => {
+  const init = async () => {
+    if (document.querySelector('.roam-log-page')) {
+      return
+    }
     const el = document.createElement("div");
     el.className = "rm-hierarchy-el";
     const parent = document.querySelector(".rm-reference-main").children[0];
     parent.insertBefore(el, parent.childNodes[0]);
     ReactDOM.render(<App />, el);
     unSub = () => {
+      ReactDOM.unmountComponentAtNode(el)
       parent.removeChild(el);
+      unSub = () => { }
     };
   };
   onRouteChange(() => {
