@@ -97,9 +97,9 @@ function TitleChangeDialog(
   useEffect(() => {
     const mount = async () => {
       const pages = await getPagesBaseonString(props.state.origin);
-      setEffectedPages(pages.filter(page => {
-        return page[0].split("/")[0] === props.state.origin
-      }));
+      const result = pages;
+      // console.log(pages, result, props)
+      setEffectedPages(result);
     };
     mount();
   }, [props.state.origin]);
