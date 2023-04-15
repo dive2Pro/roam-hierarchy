@@ -692,9 +692,10 @@ export function hierarchyInit() {
     if (document.querySelector('.roam-log-page')) {
       return
     }
+    await delay(500)
     const el = document.createElement("div");
     el.className = "rm-hierarchy-el";
-    const parent = document.querySelector(".rm-reference-container").parentElement
+    const parent = document.querySelector(".roam-article").children[1].querySelector('.rm-reference-main')
     parent.insertBefore(el, parent.childNodes[0]);
     ReactDOM.render(<App />, el);
     unSub = () => {
@@ -720,17 +721,15 @@ function addStyle() {
   document.head.appendChild(style);
   style.innerHTML = `
   .rm-hierarchy-el {
-    margin-left: 16px;
 
   }
   .rm-hierarchy {
-    margin-bottom: 10px;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -o-user-select: none;
     user-select: none;
-    margin: -4px -4px 0 -16px;
+    margin: -4px -4px 10px -16px;
   }
   .rm-hierarchy .bp3-menu-item {
     outline: none;
