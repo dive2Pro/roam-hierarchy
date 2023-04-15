@@ -293,11 +293,10 @@ function Hierarchy() {
 
   const caretTitleVm = useCaretTitle(
     (pages.length
-      ? `${
-          (content as []).length !== pages.length
-            ? (content as []).length + "/"
-            : ""
-        }${pages.length} `
+      ? `${(content as []).length !== pages.length
+        ? (content as []).length + "/"
+        : ""
+      }${pages.length} `
       : "") + "Hierarchy"
   );
 
@@ -458,11 +457,10 @@ function Homonyms() {
 
   const caretTitleVm = useCaretTitle(
     (pages.length
-      ? `${
-          (content as []).length !== pages.length
-            ? (content as []).length + "/"
-            : ""
-        }${pages.length} `
+      ? `${(content as []).length !== pages.length
+        ? (content as []).length + "/"
+        : ""
+      }${pages.length} `
       : "") + "Homonyms"
   );
 
@@ -676,11 +674,11 @@ function HierarchyMentions(props: { blocks: string[] }) {
 }
 
 function App() {
-  
+
   return (
     <>
       <Hierarchy />
-      {isHomonymsEnabled() ? <Homonyms /> : null }
+      {isHomonymsEnabled() ? <Homonyms /> : null}
     </>
   );
 }
@@ -689,14 +687,14 @@ export function renderApp() {
   if (el) ReactDOM.render(<App />, el);
 }
 export function hierarchyInit() {
-  let unSub = () => {};
+  let unSub = () => { };
   const init = async () => {
     if (document.querySelector('.roam-log-page')) {
       return
     }
     const el = document.createElement("div");
     el.className = "rm-hierarchy-el";
-    const parent = document.querySelector(".rm-reference-main").children[0];
+    const parent = document.querySelector(".rm-reference-container").parentElement
     parent.insertBefore(el, parent.childNodes[0]);
     ReactDOM.render(<App />, el);
     unSub = () => {
@@ -721,6 +719,10 @@ function addStyle() {
   const style = document.createElement("style");
   document.head.appendChild(style);
   style.innerHTML = `
+  .rm-hierarchy-el {
+    margin-left: 16px;
+
+  }
   .rm-hierarchy {
     margin-bottom: 10px;
     -webkit-user-select: none;
@@ -728,6 +730,7 @@ function addStyle() {
     -moz-user-select: none;
     -o-user-select: none;
     user-select: none;
+    margin: -4px -4px 0 -16px;
   }
   .rm-hierarchy .bp3-menu-item {
     outline: none;
@@ -744,10 +747,13 @@ function addStyle() {
     opacity: 1;
   }
 
-  .rm-hierarchy > div:first-child:hover .caret-title:first-child .rm-caret{
+  .rm-hierarchy > div:first-child .caret-title:first-child .rm-caret{
+    top: 2px;
+    opacity: 0;
+  }
+  .rm-hierarchy > div:first-child .caret-title:first-child:hover .rm-caret{
     opacity: 1;
   }
-
   .rm-mention {
     margin-bottom: 5px;
   }
