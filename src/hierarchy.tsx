@@ -30,7 +30,12 @@ import {
   Divider,
 } from "@blueprintjs/core";
 import { BreadcrumbsBlock } from "./breadcrumbs-block";
-import { isHomonymsEnabled, readConfigFromUid, saveConfigByUid } from "./settings";
+import {
+  isHomonymsEnabled,
+  readConfigFromUid,
+  saveConfigByUid,
+} from "./settings";
+import { isCollapsedByDefault } from "./settings-panel";
 
 const delay = (ms = 10) => new Promise((resolve) => setTimeout(resolve, ms));
 const InputPanel: React.FC<{ value: string; onChange: (v: string) => void }> = (
@@ -293,18 +298,19 @@ function Hierarchy() {
 
   const caretTitleVm = useCaretTitle(
     (pages.length
-      ? `${(content as []).length !== pages.length
-        ? (content as []).length + "/"
-        : ""
-      }${pages.length} `
-      : "") + "Hierarchy"
+      ? `${
+          (content as []).length !== pages.length
+            ? (content as []).length + "/"
+            : ""
+        }${pages.length} `
+      : "") + "Hierarchy",
+      isCollapsedByDefault()
   );
-
+  
   useEffect(() => {
-    if (caretTitleVm.open) {
       getHierarchy();
-    }
   }, [caretTitleVm.open]);
+  console.log(content, '---')
   if (!content) {
     return null;
   }
@@ -457,10 +463,11 @@ function Homonyms() {
 
   const caretTitleVm = useCaretTitle(
     (pages.length
-      ? `${(content as []).length !== pages.length
-        ? (content as []).length + "/"
-        : ""
-      }${pages.length} `
+      ? `${
+          (content as []).length !== pages.length
+            ? (content as []).length + "/"
+            : ""
+        }${pages.length} `
       : "") + "Homonyms"
   );
 
@@ -523,25 +530,23 @@ function CaretTitle(props: {
 
 function PageLink(props: { title: string; name: string; className?: string }) {
   return (
-    <>
-      <a
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (e.shiftKey) {
-            openPageByTitleOnSideBar(props.title);
-            return;
-          }
-          return openPageByTitle(props.title);
-        }}
-        className={props.className}
-        style={{ cursor: "pointer" }}
-      >
-        <span className="rm-page-ref__brackets">[[</span>
-        <span className="rm-page-ref--link">{props.name}</span>
-        <span className="rm-page-ref__brackets">]]</span>
-      </a>
-    </>
+    <a
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.shiftKey) {
+          openPageByTitleOnSideBar(props.title);
+          return;
+        }
+        return openPageByTitle(props.title);
+      }}
+      className={props.className}
+      style={{ cursor: "pointer" }}
+    >
+      <span className="rm-page-ref__brackets">[[</span>
+      <span className="rm-page-ref--link">{props.name}</span>
+      <span className="rm-page-ref__brackets">]]</span>
+    </a>
   );
 }
 
@@ -674,7 +679,6 @@ function HierarchyMentions(props: { blocks: string[] }) {
 }
 
 function App() {
-
   return (
     <>
       <Hierarchy />
@@ -687,21 +691,24 @@ export function renderApp() {
   if (el) ReactDOM.render(<App />, el);
 }
 export function hierarchyInit() {
-  let unSub = () => { };
+  let unSub = () => {};
   const init = async () => {
-    if (document.querySelector('.roam-log-page')) {
-      return
+    if (document.querySelector(".roam-log-page")) {
+      return;
     }
-    await delay(500)
+    await delay(500);
     const el = document.createElement("div");
     el.className = "rm-hierarchy-el";
-    const parent = document.querySelector(".roam-article").children[1].querySelector('.rm-reference-main')
+    const parent = document
+      .querySelector(".roam-article")
+      .children[1].querySelector(".rm-reference-main");
     parent.insertBefore(el, parent.childNodes[0]);
+    console.log(el, parent, ' === hierarchy ')
     ReactDOM.render(<App />, el);
     unSub = () => {
-      ReactDOM.unmountComponentAtNode(el)
+      ReactDOM.unmountComponentAtNode(el);
       parent.removeChild(el);
-      unSub = () => { }
+      unSub = () => {};
     };
   };
   onRouteChange(() => {

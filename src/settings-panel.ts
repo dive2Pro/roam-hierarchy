@@ -1,6 +1,8 @@
 import { renderApp } from "./hierarchy";
 
+let API: RoamExtensionAPI;
 export const initPanel = (api: RoamExtensionAPI) => {
+  API = api;
   api.settings.panel.create({
     tabTitle: "Roam Hierarchy",
     settings: [
@@ -21,6 +23,14 @@ export const initPanel = (api: RoamExtensionAPI) => {
         },
       },
       {
+        id: "collapsed",
+        name: "Collapsed by default",
+        description: "",
+        action: {
+          type: "switch",
+        },
+      },
+      {
         id: "homonyms",
         name: "Toggle Homonyms",
         description: "",
@@ -38,3 +48,8 @@ export const initPanel = (api: RoamExtensionAPI) => {
   const v1 = api.settings.get("brackets");
   api.settings.set("homonyms", v1 ?? true);
 };
+
+
+export function isCollapsedByDefault() {
+  return !API.settings.get("collapsed");
+}
