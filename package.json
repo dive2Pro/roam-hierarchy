@@ -6,7 +6,8 @@
   "scripts": {
     "build-web": "roamjs-scripts build",
     "build": "roamjs-scripts build --depot",
-    "dev": "roamjs-scripts dev --depot"
+    "dev": "roamjs-scripts dev --depot",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,8 @@
     "@types/arrive": "^2.4.1",
     "@types/react": "16.14.2",
     "@types/react-dom": "16.9.10",
-    "roamjs-scripts": "^0.21.3"
+    "roam-types": "^1.0.6",
+    "roamjs-scripts": "^0.21.3",
+    "typescript": "^5.9.3"
   }
 }

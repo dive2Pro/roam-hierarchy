@@ -57,7 +57,7 @@ export const getPagesContainsString = async (str: string) => {
 export const getCurrentPageUid = async () => {
   const blockOrPageUid =
     await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
-  let pageUid = (await window.roamAlphaAPI.q(
+  const res = await window.roamAlphaAPI.data.async.q(
     `[
       :find [?e]
       :in $ ?id
@@ -68,7 +68,8 @@ export const getCurrentPageUid = async () => {
       ]
       `,
     blockOrPageUid
-  )?.[0]) as unknown as string;
+  );
+  const pageUid = (res as unknown as string[])?.[0];
 
   return pageUid || blockOrPageUid;
 };
@@ -89,9 +90,3 @@ export async function openPageByTitle(title: string) {
   });
 }
 
-export const getBlockTextByUid = (uid: string) => {
-  const [result] = window.roamAlphaAPI.q(
-    `[:find [?e] :where [?b :block/uid "${uid}"] [?b :block/string ?e]]`
-  );
-  return (result as any as string) || "";
-};

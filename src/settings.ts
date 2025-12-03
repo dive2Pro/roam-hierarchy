@@ -1,3 +1,4 @@
+import { RoamExtensionAPI } from "roam-types";
 import { initPanel } from "./settings-panel";
 
 let extensionAPI: RoamExtensionAPI;

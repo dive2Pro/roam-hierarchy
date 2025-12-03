@@ -298,17 +298,16 @@ function Hierarchy() {
 
   const caretTitleVm = useCaretTitle(
     (pages.length
-      ? `${
-          (content as []).length !== pages.length
-            ? (content as []).length + "/"
-            : ""
-        }${pages.length} `
+      ? `${(content as []).length !== pages.length
+        ? (content as []).length + "/"
+        : ""
+      }${pages.length} `
       : "") + "Hierarchy",
-      isCollapsedByDefault()
+    isCollapsedByDefault()
   );
-  
+
   useEffect(() => {
-      getHierarchy();
+    getHierarchy();
   }, [caretTitleVm.open]);
   console.log(content, '---')
   if (!content) {
@@ -463,11 +462,10 @@ function Homonyms() {
 
   const caretTitleVm = useCaretTitle(
     (pages.length
-      ? `${
-          (content as []).length !== pages.length
-            ? (content as []).length + "/"
-            : ""
-        }${pages.length} `
+      ? `${(content as []).length !== pages.length
+        ? (content as []).length + "/"
+        : ""
+      }${pages.length} `
       : "") + "Homonyms"
   );
 
@@ -691,24 +689,29 @@ export function renderApp() {
   if (el) ReactDOM.render(<App />, el);
 }
 export function hierarchyInit() {
-  let unSub = () => {};
+  let unSub = () => { };
   const init = async () => {
     if (document.querySelector(".roam-log-page")) {
       return;
     }
     await delay(500);
-    const el = document.createElement("div");
-    el.className = "rm-hierarchy-el";
-    const parent = document
-      .querySelector(".roam-article")
-      .children[1].querySelector(".rm-reference-main");
-    parent.insertBefore(el, parent.childNodes[0]);
-    console.log(el, parent, ' === hierarchy ')
+
+    let el = document.querySelector(".rm-hierarchy-el");
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "rm-hierarchy-el";
+      const parent = document
+        .querySelector(".roam-article")
+        .children[1].querySelector(".rm-reference-main");
+      parent.insertBefore(el, parent.childNodes[0]);
+
+    }
+
     ReactDOM.render(<App />, el);
     unSub = () => {
       ReactDOM.unmountComponentAtNode(el);
-      parent.removeChild(el);
-      unSub = () => {};
+      el.remove();
+      unSub = () => { };
     };
   };
   onRouteChange(() => {

@@ -9,7 +9,7 @@ type ReversePullBlock = {
 };
 
 const getStrFromParentsOf = (blockUid: string) => {
-  const result = window.roamAlphaAPI.pull(
+  const result = window.roamAlphaAPI.data.async.pull(
     `
         [
             :block/uid

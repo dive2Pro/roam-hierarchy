@@ -1,3 +1,4 @@
+import { RoamExtensionAPI } from "roam-types";
 import { hierarchyInit } from "./hierarchy";
 import { initAPI } from "./settings";
 

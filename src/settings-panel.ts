@@ -1,3 +1,4 @@
+import { RoamExtensionAPI } from "roam-types";
 import { renderApp } from "./hierarchy";
 
 let API: RoamExtensionAPI;
