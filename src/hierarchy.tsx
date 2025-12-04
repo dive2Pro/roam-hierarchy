@@ -233,7 +233,7 @@ function Hierarchy() {
     uidRef.current = uid;
 
     const title = getPageTitleByPageUid(uid);
-    console.log({ uid, title });
+    // console.log({ uid, title });
     let fulFillTile = title;
     if (title.includes("/")) {
     } else {
@@ -311,7 +311,7 @@ function Hierarchy() {
   useEffect(() => {
     getHierarchy();
   }, [caretTitleVm.open]);
-  console.log(content, '---')
+  // console.log(content, '---')
   if (!content) {
     return null;
   }
