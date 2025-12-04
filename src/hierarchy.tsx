@@ -231,7 +231,9 @@ function Hierarchy() {
   async function getHierarchy() {
     const uid = await getCurrentPageUid();
     uidRef.current = uid;
+
     const title = getPageTitleByPageUid(uid);
+    // console.log({ uid, title });
     let fulFillTile = title;
     if (title.includes("/")) {
     } else {
@@ -309,7 +311,7 @@ function Hierarchy() {
   useEffect(() => {
     getHierarchy();
   }, [caretTitleVm.open]);
-  console.log(content, '---')
+  // console.log(content, '---')
   if (!content) {
     return null;
   }
@@ -695,20 +697,21 @@ export function hierarchyInit() {
       return;
     }
     await delay(500);
-    if (document.querySelector(".rm-hierarchy-el")) {
-      return;
+
+    let el = document.querySelector(".rm-hierarchy-el");
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "rm-hierarchy-el";
+      const parent = document
+        .querySelector(".roam-article")
+        .children[1].querySelector(".rm-reference-main");
+      parent.insertBefore(el, parent.childNodes[0]);
     }
-    const el = document.createElement("div");
-    el.className = "rm-hierarchy-el";
-    const parent = document
-      .querySelector(".roam-article")
-      .children[1].querySelector(".rm-reference-main");
-    parent.insertBefore(el, parent.childNodes[0]);
-    console.log(el, parent, ' === hierarchy ')
+
     ReactDOM.render(<App />, el);
     unSub = () => {
       ReactDOM.unmountComponentAtNode(el);
-      parent.removeChild(el);
+      el.remove();
       unSub = () => { };
     };
   };

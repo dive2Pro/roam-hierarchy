@@ -9,7 +9,7 @@ type ReversePullBlock = {
 };
 
 const getStrFromParentsOf = (blockUid: string) => {
-  const result = window.roamAlphaAPI.pull(
+  const result = window.roamAlphaAPI.data.async.pull(
     `
         [
             :block/uid
@@ -49,7 +49,7 @@ export function OldBreadcrumbsBlock(props: { uid: string; showPage?: boolean }) 
   const [parents, setParents] = useState<ReversePullBlock[]>([]);
   useEffect(() => {
     const parentsBlocks = getStrFromParentsOf(uid);
-    console.log(parentsBlocks);
+    // console.log(parentsBlocks);
     setParents(props.showPage ? parentsBlocks : parentsBlocks.slice(1));
   }, [uid, props.showPage]);
 

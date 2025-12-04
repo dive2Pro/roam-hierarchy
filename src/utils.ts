@@ -30,34 +30,36 @@ export const onRouteChange = (cb: () => void) => {
 };
 
 export const getPagesBaseonString = async (str: string) => {
-  const result = await window.roamAlphaAPI.q(`
+  const result = await window.roamAlphaAPI.data.async.q(`
  [
   :find ?title:name ?title:uid ?time:date
+  :in $ ?search:title
   :where 
   [?page :node/title ?title:name]
   [?page :block/uid ?title:uid]
   [?page :edit/time ?time:date]
-  [(clojure.string/starts-with? ?title:name "${str}")]] 
-  `) as [string, string, number][];
+  [(clojure.string/starts-with? ?title:name ?search:title)]] 
+  `, str) as [string, string, number][];
   return result;
 };
 
 export const getPagesContainsString = async (str: string) => {
-  const result = await window.roamAlphaAPI.q(`
+  const result = await window.roamAlphaAPI.data.async.q(`
  [
   :find ?title:name ?title:uid
+  :in $ ?search:title 
   :where 
   [?page :node/title ?title:name]
   [?page :block/uid ?title:uid]
-  [(clojure.string/includes? ?title:name "${str}")]] 
-  `);
-  return result as [string, string, number][];
-}
+  [(clojure.string/includes? ?title:name ?search:title)]]   
+  `, str) as [string, string, number][];
+  return result;
+};
 
 export const getCurrentPageUid = async () => {
   const blockOrPageUid =
     await window.roamAlphaAPI.ui.mainWindow.getOpenPageOrBlockUid();
-  let pageUid = (await window.roamAlphaAPI.q(
+  const res = await window.roamAlphaAPI.data.async.q(
     `[
       :find [?e]
       :in $ ?id
@@ -68,7 +70,8 @@ export const getCurrentPageUid = async () => {
       ]
       `,
     blockOrPageUid
-  )?.[0]) as unknown as string;
+  );
+  const pageUid = (res as unknown as string[])?.[0];
 
   return pageUid || blockOrPageUid;
 };
@@ -89,9 +92,3 @@ export async function openPageByTitle(title: string) {
   });
 }
 
-export const getBlockTextByUid = (uid: string) => {
-  const [result] = window.roamAlphaAPI.q(
-    `[:find [?e] :where [?b :block/uid "${uid}"] [?b :block/string ?e]]`
-  );
-  return (result as any as string) || "";
-};
