@@ -706,7 +706,6 @@ export function hierarchyInit() {
         .querySelector(".roam-article")
         .children[1].querySelector(".rm-reference-main");
       parent.insertBefore(el, parent.childNodes[0]);
-
     }
 
     ReactDOM.render(<App />, el);
