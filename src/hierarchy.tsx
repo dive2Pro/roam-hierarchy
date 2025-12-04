@@ -231,7 +231,9 @@ function Hierarchy() {
   async function getHierarchy() {
     const uid = await getCurrentPageUid();
     uidRef.current = uid;
+
     const title = getPageTitleByPageUid(uid);
+    console.log({ uid, title });
     let fulFillTile = title;
     if (title.includes("/")) {
     } else {
