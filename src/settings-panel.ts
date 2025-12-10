@@ -1,5 +1,5 @@
-import { RoamExtensionAPI } from "roam-types";
 import { renderApp } from "./hierarchy";
+import { RoamExtensionAPI } from "roam-types";
 
 let API: RoamExtensionAPI;
 export const initPanel = (api: RoamExtensionAPI) => {
