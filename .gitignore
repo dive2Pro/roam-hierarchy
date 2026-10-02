@@ -1,4 +1,6 @@
 node_modules
 .env
 extension.js
+extension.js.LICENSE.txt
 build
+.workbuddy

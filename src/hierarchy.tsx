@@ -231,11 +231,10 @@ function Hierarchy() {
 
     const title = getPageTitleByPageUid(uid);
     // console.log({ uid, title });
-    let fulFillTile = title;
-    if (title.includes("/")) {
-    } else {
-      fulFillTile = `${title}/`;
-    }
+    // 查询串必须以 "/" 结尾，否则 starts-with 会命中同前缀但并非子页的页面：
+    // 页面 "a/b" 用查询串 "a/b" 会混入 "a/bc"、"a/bb"、"a/bx/y"。
+    // 标题本身已以 "/" 结尾时（如 "a/b/"）不能再补，否则查询串成 "a/b//" 会漏掉全部子页。
+    const fulFillTile = title.endsWith("/") ? title : `${title}/`;
     titleChangeStatus.setOriginTitle(title);
     titleChangeStatus.onValueChange(title);
     const pages = await getPagesBaseonString(fulFillTile);
@@ -246,12 +245,13 @@ function Hierarchy() {
     const pageInfos = pages
       .filter((info) => info[0] !== title)
       .map((info) => {
-        const t = info[0].substring(fulFillTile.length + 1);
+        // 去掉 "父标题/" 前缀后的相对路径，段数即相对层级
+        const t = info[0].substring(fulFillTile.length);
         return {
           title: info[0],
           uid: info[1],
           time: info[2],
-          level: t.split("/").length,
+          level: t.split("/").filter(Boolean).length,
         };
       });
 
@@ -261,10 +261,15 @@ function Hierarchy() {
       }),
       1
     );
+    // 未保存过配置（level 为 0）时默认全部展开；
+    // 保存的层级若超过当前实际最大层级（深层子页被删除等），收敛到 maxLevel，
+    // 避免滑杆 value 超出 max 后与实际显示不一致。
+    const savedLevel =
+      Number(config.level) > 0 ? Number(config.level) : maxLevel;
     setLevel((prev) => ({
       ...prev,
       max: maxLevel,
-      current: !!config.level ? config.level : maxLevel,
+      current: Math.min(Math.max(savedLevel, 1), maxLevel),
       pageLevel: title.split("/").length,
     }));
 
